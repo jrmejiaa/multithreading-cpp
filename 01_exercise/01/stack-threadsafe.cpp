@@ -8,8 +8,6 @@
 #include <type_traits>
 
 struct no_copy {
-    no_copy() = default;
-
     no_copy(const no_copy& other) = delete;
     no_copy& operator=(const no_copy& other) = delete;
 
@@ -18,9 +16,7 @@ struct no_copy {
 };
 
 struct no_move {
-    no_move() = default;
-
-    no_move(const no_move& other) = ;
+    no_move(const no_move& other) = default;
     no_move& operator=(const no_move& other) = default;
 
     no_move(no_move&& other) = delete;
