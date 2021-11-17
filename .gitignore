@@ -30,3 +30,5 @@
 *.exe
 *.out
 *.app
+
+01_exercise/cmake-build-debug/Testing/Temporary/
