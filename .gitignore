@@ -32,4 +32,4 @@
 *.app
 
 00_refresher_cpp/cmake-build-debug/
-01_exercise/cmake-build-debug/
+exercises/cmake-build-debug/

@@ -1,3 +1,0 @@
-/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/01_exercise/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/01_exercise/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/01_exercise/cmake-build-debug/CMakeFiles/01_exercise.dir
