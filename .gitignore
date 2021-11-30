@@ -31,4 +31,5 @@
 *.out
 *.app
 
-01_exercise/cmake-build-debug/Testing/Temporary/
+00_refresher_cpp/cmake-build-debug/
+01_exercise/cmake-build-debug/

@@ -1,3 +1,0 @@
-/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/00_refresher_cpp/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/00_refresher_cpp/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/00_refresher_cpp/cmake-build-debug/CMakeFiles/00_refresher_cpp.dir
