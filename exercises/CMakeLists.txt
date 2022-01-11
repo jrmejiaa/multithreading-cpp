@@ -8,3 +8,5 @@ set(HEADER_FILES)
 
 add_executable(01_exercise 01_exercise/stack/stack-threadsafe.hpp 01_exercise/main.cpp)
 add_executable(02_exercise 02_exercise/main.cpp)
+add_executable(03_exercise_basic 03_exercise/shared_value_basic.cpp)
+add_executable(03_exercise_atomic 03_exercise/shared_value_atomic.cpp)
