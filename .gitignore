@@ -33,3 +33,5 @@
 
 00_refresher_cpp/cmake-build-debug/
 exercises/cmake-build-debug/
+
+jupyter-notebooks/.ipynb_checkpoints/
