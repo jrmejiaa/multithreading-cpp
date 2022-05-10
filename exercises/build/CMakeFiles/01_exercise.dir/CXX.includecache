@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/01_exercise/main.cpp
+stack/stack-threadsafe.hpp
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/01_exercise/stack/stack-threadsafe.hpp
+
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/01_exercise/stack/stack-threadsafe.hpp
+array
+-
+exception
+-
+iostream
+-
+memory
+-
+mutex
+-
+stack
+-
+thread
+-
+type_traits
+-
+

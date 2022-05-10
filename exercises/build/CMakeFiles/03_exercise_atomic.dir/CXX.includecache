@@ -1,0 +1,16 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/03_exercise/shared_value_atomic.cpp
+string
+-
+thread
+-
+atomic
+-
+

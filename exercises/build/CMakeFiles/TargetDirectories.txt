@@ -1,0 +1,13 @@
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/rebuild_cache.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/03_exercise_atomic_not_working.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/03_exercise_atomic.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/03_exercise_basic.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/edit_cache.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/02_exercise_promises.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/02_exercise_atomic.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/04_exercise_apsp.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/02_exercise_v_promises.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/01_exercise.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/02_exercise_cv.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/00_exercise_package_tasks.dir
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/build/CMakeFiles/00_exercise_futures.dir

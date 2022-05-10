@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jairom/Documents/TUD_Projects/03_Semester/multithreading-cpp/exercises/02_exercise/promises.cpp
+iostream
+-
+string
+-
+thread
+-
+future
+-
+chrono
+-
+

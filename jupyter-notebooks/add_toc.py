@@ -34,7 +34,6 @@ def collect_headers(nb_name):
     headers = []
     RE = re.compile(r'(?:^|\n)(?P<level>#{1,6})(?P<header>(?:\\.|[^\\])*?)#*(?:\n|$)')
     nb = nbformat.read(nb_name, as_version=4)
-    firstHeader = True
     for cell in nb.cells:
         if is_toc_comment(cell):
             continue
@@ -42,11 +41,8 @@ def collect_headers(nb_name):
             for m in RE.finditer(cell.source):
                 header = m.group('header').strip()
                 level = m.group('level').strip().count('#')
-                if (not firstHeader): 
-                   	headers.append(Header(level, header))
-                   	print(level*'  ','-',header)
-                else:
-                    firstHeader = False
+                headers.append(Header(level, header))
+                print(level*'  ','-',header)
     return headers
 
 def write_toc(nb_name, headers):
@@ -62,13 +58,13 @@ def write_toc(nb_name, headers):
     toc += 'Table of Contents:\n'
     toc += '\n'.join([format(h) for h in headers])
 
-    first_cell = nb.cells[1]
+    first_cell = nb.cells[0]
     if is_toc_comment(first_cell):
         print("- amending toc for {0}".format(nb_file))
         first_cell.source = toc
     else:
         print("- inserting toc for {0}".format(nb_file))
-        nb.cells.insert(1, new_markdown_cell(source=toc))
+        nb.cells.insert(0, new_markdown_cell(source=toc))
     nbformat.write(nb, nb_name)
     
 if __name__=='__main__':

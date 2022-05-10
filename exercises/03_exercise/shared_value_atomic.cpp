@@ -1,33 +1,16 @@
-#include <iostream>
 #include <string>
 #include <thread>
-#include <mutex>
 #include <atomic>
-#include <condition_variable>
 
-std::mutex m;
-std::condition_variable cv;
 std::atomic<int> sharedValue(0);
 std::atomic<bool> ready(false);
 
-void IncrementSharedValue10000000Times ( )
-{
-    // Wait until main() sends data
-    std::unique_lock<std::mutex> lk(m);
-    cv.wait(lk, []{return ready.load();});
-    ready.store(false);
-
+void IncrementSharedValue10000000Times() {
     int count = 0;
-    while ( count < 10000000)
-    {
-        sharedValue.store(sharedValue.load() + 1);
+    while (count < 10000000) {
+        sharedValue.fetch_add(1, std::memory_order_relaxed);
         count++;
     }
-
-    // Unlock and heads up the thread that it is open
-    lk.unlock();
-    ready.store(true);
-    cv.notify_one();
 }
 /*
  * Questions about the code
@@ -41,15 +24,12 @@ void IncrementSharedValue10000000Times ( )
  *      consistency
 */
 
-int main (int argc , char * argv [] )
-{
+int main(int argc, char *argv[]) {
     sharedValue = 0;
-    std::thread thread1 (IncrementSharedValue10000000Times);
-    std::thread thread2 (IncrementSharedValue10000000Times);
-    ready.store(true);
-    cv.notify_one();
+    std::thread thread1(IncrementSharedValue10000000Times);
+    std::thread thread2(IncrementSharedValue10000000Times);
     thread1.join();
-    thread2.join() ;
-    printf("sharedValue=%d \n", sharedValue.load()) ;
+    thread2.join();
+    printf("sharedValue=%d \n", sharedValue.load());
     return 0;
 }

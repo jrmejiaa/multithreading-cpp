@@ -6,27 +6,32 @@
 #include <map>
 #include <numeric>
 #include <queue>
+#include <sstream>
 #include <string>
 #include <vector>
 
-using vertex_type = size_t;
+#include <atomic>
+#include <execution>
+#include <mutex>
+
+using vertex_type = int;
 using distance_type = unsigned int;
 
 struct VertexDistancePair {
-	vertex_type vertex_index;
-	distance_type distance;
+    vertex_type vertex_index;
+    distance_type distance;
 };
 
-template <>
+template<>
 struct std::greater<VertexDistancePair> {
-	bool operator()(const VertexDistancePair& lhs, const VertexDistancePair& rhs) const {
-		return lhs.distance > rhs.distance;
-	}
+    bool operator()(const VertexDistancePair &lhs, const VertexDistancePair &rhs) const {
+        return lhs.distance > rhs.distance;
+    }
 };
 
 struct DistancesAndFurthestVertex {
-	std::vector<distance_type> all_pairs_shortest_paths;
-	std::vector<VertexDistancePair> furthest_reaching_vertex;
+    std::vector<distance_type> all_pairs_shortest_paths;
+    std::vector<VertexDistancePair> furthest_reaching_vertex;
 };
 
 /**
@@ -40,43 +45,43 @@ struct DistancesAndFurthestVertex {
  *      <return>[i][j] = k
  *      if <return>[i] does not contain j, then k == 0
  */
-std::vector<std::map<vertex_type, distance_type>> read_connectivity(const std::filesystem::path& path) {
-	std::ifstream file(path);
-	std::string line{};
+std::vector<std::map<vertex_type, distance_type>> read_connectivity(const std::filesystem::path &path) {
+    std::ifstream file(path);
+    std::string line{};
 
-	std::getline(file, line);
+    std::getline(file, line);
 
-	std::stringstream sstream_number_vertices(line);
+    std::stringstream sstream_number_vertices(line);
 
-	vertex_type number_vertices = 0;
-	sstream_number_vertices >> number_vertices;
+    vertex_type number_vertices = 0;
+    sstream_number_vertices >> number_vertices;
 
-	std::vector<std::map<vertex_type, distance_type>> connectivity(number_vertices);
+    std::vector<std::map<vertex_type, distance_type>> connectivity(number_vertices);
 
-	while (std::getline(file, line)) {
-		std::stringstream sstream_connectivity(line);
+    while (std::getline(file, line)) {
+        std::stringstream sstream_connectivity(line);
 
-		vertex_type source_idx = 0;
-		vertex_type target_idx = 0;
-		distance_type weight = 0;
+        vertex_type source_idx = 0;
+        vertex_type target_idx = 0;
+        distance_type weight = 0;
 
-		const auto success =
-			(sstream_connectivity >> source_idx) &&
-			(sstream_connectivity >> target_idx) &&
-			(sstream_connectivity >> weight);
+        const auto success =
+                (sstream_connectivity >> source_idx) &&
+                (sstream_connectivity >> target_idx) &&
+                (sstream_connectivity >> weight);
 
-		if (!success) {
-			continue;
-		}
+        if (!success) {
+            continue;
+        }
 
-		if (source_idx >= number_vertices || target_idx >= number_vertices) {
-			continue;
-		}
+        if (source_idx >= number_vertices || target_idx >= number_vertices) {
+            continue;
+        }
 
-		connectivity[source_idx][target_idx] += weight;
-	}
+        connectivity[source_idx][target_idx] += weight;
+    }
 
-	return connectivity;
+    return connectivity;
 }
 
 /**
@@ -87,31 +92,32 @@ std::vector<std::map<vertex_type, distance_type>> read_connectivity(const std::f
  *		for all vertices i, the shortest path source_vertex_id--->i has the distance k,
  *		<return>[i] = k
  */
-std::vector<distance_type> dijkstra_shortest_paths(const std::vector<std::map<vertex_type, distance_type>>& connectivity, vertex_type source_vertex_id) {
-	const auto number_vertices = connectivity.size();
-	std::vector<distance_type> distances(number_vertices, std::numeric_limits<distance_type>::max());
+std::vector<distance_type>
+dijkstra_shortest_paths(const std::vector<std::map<vertex_type, distance_type>> &connectivity, vertex_type source_vertex_id) {
+    const auto number_vertices = connectivity.size();
+    std::vector<distance_type> distances(number_vertices, std::numeric_limits<distance_type>::max());
 
-	std::priority_queue<VertexDistancePair, std::vector<VertexDistancePair>, std::greater<VertexDistancePair>> shortest_paths_queue{};
+    std::priority_queue<VertexDistancePair, std::vector<VertexDistancePair>, std::greater<VertexDistancePair>> shortest_paths_queue{};
 
-	distances[source_vertex_id] = 0;
-	shortest_paths_queue.emplace(source_vertex_id, 0);
+    distances[source_vertex_id] = 0;
+    shortest_paths_queue.emplace(source_vertex_id, 0);
 
-	while (!shortest_paths_queue.empty()) {
-		const auto current_distance = shortest_paths_queue.top().distance;
-		const auto current_vertex_id = shortest_paths_queue.top().vertex_index;
+    while (!shortest_paths_queue.empty()) {
+        const auto current_distance = shortest_paths_queue.top().distance;
+        const auto current_vertex_id = shortest_paths_queue.top().vertex_index;
 
-		shortest_paths_queue.pop();
+        shortest_paths_queue.pop();
 
-		for (const auto& [vertex_id, edge_weight] : connectivity[current_vertex_id]) {
-			const auto new_distance = current_distance + edge_weight;
-			if (new_distance < distances[vertex_id]) {
-				distances[vertex_id] = new_distance;
-				shortest_paths_queue.emplace(vertex_id, new_distance);
-			}
-		}
-	}
+        for (const auto&[vertex_id, edge_weight]: connectivity[current_vertex_id]) {
+            const auto new_distance = current_distance + edge_weight;
+            if (new_distance < distances[vertex_id]) {
+                distances[vertex_id] = new_distance;
+                shortest_paths_queue.emplace(vertex_id, new_distance);
+            }
+        }
+    }
 
-	return distances;
+    return distances;
 }
 
 /**
@@ -121,21 +127,44 @@ std::vector<distance_type> dijkstra_shortest_paths(const std::vector<std::map<ve
  *		<return>[i * number_vertices + j] = k
  *		indicates that the shortest path i--->j has distance k
  */
-std::vector<distance_type> all_pairs_shortest_paths(const std::vector<std::map<vertex_type, distance_type>>& connectivity) {
-	const auto number_vertices = connectivity.size();
+std::vector<distance_type> all_pairs_shortest_paths(const std::vector<std::map<vertex_type, distance_type>> &connectivity) {
+    const auto number_vertices = connectivity.size();
 
-	std::vector<distance_type> all_distances(number_vertices * number_vertices, std::numeric_limits<distance_type>::max());
-	for (vertex_type source_vertex_id = 0; source_vertex_id < number_vertices; source_vertex_id++) {
-		const auto& local_distances = dijkstra_shortest_paths(connectivity, source_vertex_id);
-		const auto offset = source_vertex_id * number_vertices;
+    std::vector<distance_type> all_distances(number_vertices * number_vertices, std::numeric_limits<distance_type>::max());
+    for (vertex_type source_vertex_id = 0; source_vertex_id < number_vertices; source_vertex_id++) {
+        const auto &local_distances = dijkstra_shortest_paths(connectivity, source_vertex_id);
+        const auto offset = source_vertex_id * number_vertices;
 
-		for (vertex_type target_vertex_id = 0; target_vertex_id < number_vertices; target_vertex_id++) {
-			const auto current_distance = local_distances[target_vertex_id];
-			all_distances[offset + target_vertex_id] = current_distance;
-		}
-	}
+        for (vertex_type target_vertex_id = 0; target_vertex_id < number_vertices; target_vertex_id++) {
+            const auto current_distance = local_distances[target_vertex_id];
+            all_distances[offset + target_vertex_id] = current_distance;
+        }
+    }
 
-	return all_distances;
+    return all_distances;
+}
+
+std::vector<distance_type> all_pairs_shortest_paths_parallel(const std::vector<std::map<vertex_type, distance_type>> &connectivity) {
+    const auto number_vertices = connectivity.size();
+
+    std::vector<vertex_type> indices(number_vertices);
+    std::iota(indices.begin(), indices.end(), vertex_type(0));
+
+    std::vector<distance_type> all_distances(number_vertices * number_vertices, std::numeric_limits<distance_type>::max());
+
+    std::for_each(std::execution::par, indices.begin(), indices.end(),
+                  [&all_distances, &connectivity, number_vertices](vertex_type source_vertex_id) {
+                      const auto &local_distances = dijkstra_shortest_paths(connectivity, source_vertex_id);
+                      const auto offset = source_vertex_id * number_vertices;
+
+                      for (vertex_type target_vertex_id = 0; target_vertex_id < number_vertices; target_vertex_id++) {
+                          const auto current_distance = local_distances[target_vertex_id];
+                          all_distances[offset + target_vertex_id] = current_distance;
+                      }
+                  }
+    );
+
+    return all_distances;
 }
 
 /**
@@ -145,27 +174,139 @@ std::vector<distance_type> all_pairs_shortest_paths(const std::vector<std::map<v
  * @return <return>[i] = (j, k) indicates that
  *		from all shortest paths to i, j has the longest, and its distance is k
  */
-std::vector<VertexDistancePair> calculate_largest_smallest_path(const std::vector<distance_type>& all_distance, vertex_type number_vertices) {
-	std::vector<VertexDistancePair> furthest_reaching_vertex(number_vertices);
+std::vector<VertexDistancePair>
+calculate_largest_smallest_path(const std::vector<distance_type> &all_distance, vertex_type number_vertices) {
+    std::vector<VertexDistancePair> furthest_reaching_vertex(number_vertices);
 
-	for (vertex_type vertex_id = 0; vertex_id < number_vertices; vertex_id++) {
-		furthest_reaching_vertex[vertex_id] = { vertex_id, 0 };
-	}
+    for (vertex_type vertex_id = 0; vertex_id < number_vertices; vertex_id++) {
+        furthest_reaching_vertex[vertex_id] = {vertex_id, 0};
+    }
 
-	for (vertex_type source_vertex_id = 0; source_vertex_id < number_vertices; source_vertex_id++) {
-		const auto offset = source_vertex_id * number_vertices;
+    for (vertex_type source_vertex_id = 0; source_vertex_id < number_vertices; source_vertex_id++) {
+        const auto offset = source_vertex_id * number_vertices;
 
-		for (vertex_type target_vertex_id = 0; target_vertex_id < number_vertices; target_vertex_id++) {
-			const auto current_distance = all_distance[offset + target_vertex_id];
+        for (vertex_type target_vertex_id = 0; target_vertex_id < number_vertices; target_vertex_id++) {
+            const auto current_distance = all_distance[offset + target_vertex_id];
 
-			const auto current_furthest_distance = furthest_reaching_vertex[target_vertex_id].distance;
-			if (current_distance > current_furthest_distance) {
-				furthest_reaching_vertex[target_vertex_id] = { source_vertex_id, current_distance };
-			}
-		}
-	}
+            const auto current_furthest_distance = furthest_reaching_vertex[target_vertex_id].distance;
+            if (current_distance > current_furthest_distance) {
+                furthest_reaching_vertex[target_vertex_id] = {source_vertex_id, current_distance};
+            }
+        }
+    }
 
-	return furthest_reaching_vertex;
+    return furthest_reaching_vertex;
+}
+
+std::vector<VertexDistancePair>
+calculate_largest_smallest_path_parallel_lock(const std::vector<distance_type> &all_distance, vertex_type number_vertices) {
+    std::vector<VertexDistancePair> furthest_reaching_vertex(number_vertices);
+
+    std::vector<vertex_type> indices(number_vertices);
+    std::iota(indices.begin(), indices.end(), vertex_type(0));
+
+    std::for_each(std::execution::par, indices.begin(), indices.end(), [&furthest_reaching_vertex](vertex_type vertex_id) {
+        furthest_reaching_vertex[vertex_id] = {vertex_id, 0};
+    });
+
+    std::vector<std::mutex> mutexes(number_vertices);
+
+    std::for_each(std::execution::par, indices.begin(), indices.end(),
+                  [number_vertices, &furthest_reaching_vertex, &all_distance, &mutexes](vertex_type source_vertex_id) {
+                      const auto offset = source_vertex_id * number_vertices;
+
+                      for (vertex_type target_vertex_id = 0; target_vertex_id < number_vertices; target_vertex_id++) {
+                          const auto current_distance = all_distance[offset + target_vertex_id];
+
+                          std::lock_guard<std::mutex> lock(mutexes[target_vertex_id]);
+
+                          const auto current_furthest_distance = furthest_reaching_vertex[target_vertex_id].distance;
+                          if (current_distance > current_furthest_distance) {
+                              furthest_reaching_vertex[target_vertex_id] = {source_vertex_id, current_distance};
+                          }
+                      }
+                  }
+    );
+
+    return furthest_reaching_vertex;
+}
+
+std::vector<VertexDistancePair>
+calculate_largest_smallest_path_parallel_atomic_ref(const std::vector<distance_type> &all_distance, vertex_type number_vertices) {
+    std::vector<VertexDistancePair> furthest_reaching_vertex(number_vertices);
+
+    std::vector<vertex_type> indices(number_vertices);
+    std::iota(indices.begin(), indices.end(), vertex_type(0));
+
+    std::for_each(std::execution::par, indices.begin(), indices.end(), [&furthest_reaching_vertex](vertex_type vertex_id) {
+        furthest_reaching_vertex[vertex_id] = {vertex_id, 0};
+    });
+
+    std::for_each(std::execution::par, indices.begin(), indices.end(),
+                  [number_vertices, &furthest_reaching_vertex, &all_distance](vertex_type source_vertex_id) {
+                      const auto offset = source_vertex_id * number_vertices;
+
+                      for (vertex_type target_vertex_id = 0; target_vertex_id < number_vertices; target_vertex_id++) {
+                          const auto current_distance = all_distance[offset + target_vertex_id];
+                          const VertexDistancePair proposed = {source_vertex_id, current_distance};
+
+                          std::atomic_ref<VertexDistancePair> atomic_view(furthest_reaching_vertex[target_vertex_id]);
+
+                          auto value = proposed;
+                          auto previous_value = atomic_view.exchange(value, std::memory_order::relaxed);
+
+                          while (previous_value.distance > value.distance) {
+                              value = previous_value;
+                              previous_value = atomic_view.exchange(value, std::memory_order::relaxed);
+                          }
+                      }
+                  }
+    );
+
+    return furthest_reaching_vertex;
+}
+
+std::vector<VertexDistancePair>
+calculate_largest_smallest_path_parallel_atomic(const std::vector<distance_type> &all_distance, vertex_type number_vertices) {
+    std::vector<std::atomic<VertexDistancePair>> furthest_reaching_vertex_atomic(number_vertices);
+
+    std::vector<vertex_type> indices(number_vertices);
+    std::iota(indices.begin(), indices.end(), vertex_type(0));
+
+    std::for_each(std::execution::par, indices.begin(), indices.end(),
+                  [&furthest_reaching_vertex_atomic](vertex_type vertex_id) {
+                      furthest_reaching_vertex_atomic[vertex_id] = {vertex_id, 0};
+                  }
+    );
+
+    std::for_each(std::execution::par, indices.begin(), indices.end(),
+                  [number_vertices, &furthest_reaching_vertex_atomic, &all_distance](vertex_type source_vertex_id) {
+                      const auto offset = source_vertex_id * number_vertices;
+
+                      for (vertex_type target_vertex_id = 0; target_vertex_id < number_vertices; target_vertex_id++) {
+                          const auto current_distance = all_distance[offset + target_vertex_id];
+                          VertexDistancePair proposed = {source_vertex_id, current_distance};
+
+                          auto value = proposed;
+                          auto previous_value = furthest_reaching_vertex_atomic[target_vertex_id].exchange(value,
+                                                                                                           std::memory_order::relaxed);
+                          while (previous_value.distance > value.distance) {
+                              value = previous_value;
+                              previous_value = furthest_reaching_vertex_atomic[target_vertex_id].exchange(value,
+                                                                                                          std::memory_order::relaxed);
+                          }
+                      }
+                  }
+    );
+
+    std::vector<VertexDistancePair> furthest_reaching_vertex(number_vertices);
+
+    std::for_each(std::execution::par, indices.begin(), indices.end(),
+                  [&furthest_reaching_vertex_atomic, &furthest_reaching_vertex](vertex_type vertex_id) {
+                      furthest_reaching_vertex[vertex_id] = furthest_reaching_vertex_atomic[vertex_id].load();
+                  });
+
+    return furthest_reaching_vertex;
 }
 
 /**
@@ -184,51 +325,83 @@ std::vector<VertexDistancePair> calculate_largest_smallest_path(const std::vecto
  *			and for all other vertices k != j with shortest path k--->i with distance w'
  *			w' < w
  */
-DistancesAndFurthestVertex do_work_serial(const std::vector<std::map<vertex_type, distance_type>>& connectivity) {
-	const auto number_vertices = connectivity.size();
+DistancesAndFurthestVertex do_work_serial(const std::vector<std::map<vertex_type, distance_type>> &connectivity) {
+    const auto number_vertices = connectivity.size();
 
-	const auto& all_distances = all_pairs_shortest_paths(connectivity);
-	const auto& furthest_reaching_vertices = calculate_largest_smallest_path(all_distances, number_vertices);
+    const auto &all_distances = all_pairs_shortest_paths(connectivity);
+    const auto &furthest_reaching_vertices = calculate_largest_smallest_path(all_distances, number_vertices);
 
-	return { all_distances, furthest_reaching_vertices };
+    return {all_distances, furthest_reaching_vertices};
 }
 
-void measure_execution_time(const std::vector<std::map<vertex_type, distance_type>>& connectivity,
-	std::function< DistancesAndFurthestVertex(const std::vector<std::map<vertex_type, distance_type>>&)> function) {
+DistancesAndFurthestVertex do_work_parallel_lock(const std::vector<std::map<vertex_type, distance_type>> &connectivity) {
+    const auto number_vertices = connectivity.size();
 
-	const auto before_calculation = std::chrono::high_resolution_clock::now();
-	const auto& [distances, furthest_points] = function(connectivity);
-	const auto after_calculation = std::chrono::high_resolution_clock::now();
+    const auto &all_distances = all_pairs_shortest_paths_parallel(connectivity);
+    const auto &furthest_reaching_vertices = calculate_largest_smallest_path_parallel_lock(all_distances, number_vertices);
 
-	std::map<distance_type, vertex_type> histogram{};
-
-	for (const auto& [vertex_index, distance] : furthest_points) {
-		histogram[distance]++;
-	}
-
-	const auto time = (after_calculation - before_calculation).count();
-
-	std::cout << "The calculation took: " << time << " ns.\n";
-
-	for (const auto& [distance, number_vertices] : histogram) {
-		std::cout << "There are " << number_vertices << " vertices that have a largest smallest-path to them of: " << distance << '\n';
-	}
+    return {all_distances, furthest_reaching_vertices};
 }
+
+DistancesAndFurthestVertex do_work_parallel_atomic(const std::vector<std::map<vertex_type, distance_type>> &connectivity) {
+    const auto number_vertices = connectivity.size();
+
+    const auto &all_distances = all_pairs_shortest_paths_parallel(connectivity);
+    const auto &furthest_reaching_vertices = calculate_largest_smallest_path_parallel_atomic(all_distances, number_vertices);
+
+    return {all_distances, furthest_reaching_vertices};
+}
+
+DistancesAndFurthestVertex do_work_parallel_atomic_ref(const std::vector<std::map<vertex_type, distance_type>> &connectivity) {
+    const auto number_vertices = connectivity.size();
+
+    const auto &all_distances = all_pairs_shortest_paths_parallel(connectivity);
+    const auto &furthest_reaching_vertices = calculate_largest_smallest_path_parallel_atomic_ref(all_distances, number_vertices);
+
+    return {all_distances, furthest_reaching_vertices};
+}
+
+
+void measure_execution_time(const std::vector<std::map<vertex_type, distance_type>> &connectivity,
+                            std::function<DistancesAndFurthestVertex(const std::vector<std::map<vertex_type, distance_type>> &)> function) {
+
+    const auto before_calculation = std::chrono::high_resolution_clock::now();
+    const auto&[distances, furthest_points] = function(connectivity);
+    const auto after_calculation = std::chrono::high_resolution_clock::now();
+
+    std::map<distance_type, vertex_type> histogram{};
+
+    for (const auto&[vertex_index, distance]: furthest_points) {
+        histogram[distance]++;
+    }
+
+    const auto time = (after_calculation - before_calculation).count();
+
+    std::cout << "The calculation took: " << time << " ns.\n";
+
+    for (const auto&[distance, number_vertices]: histogram) {
+        std::cout << "There are " << number_vertices << " vertices that have a largest smallest-path to them of: " << distance << '\n';
+    }
+}
+
 
 int main() {
-	std::vector<std::map<vertex_type, distance_type>> manual_connectivity =
-	{
-		{ {1, 3}, {2, 8}},
-		{ {0, 2}, {2, 1}},
-		{ {0, 2}, {1, 3}}
-	};
+    std::vector<std::map<vertex_type, distance_type>> manual_connectivity =
+            {
+                    {{1, 3}, {2, 8}},
+                    {{0, 2}, {2, 1}},
+                    {{0, 2}, {1, 3}}
+            };
 
-	std::vector<std::map<vertex_type, distance_type>> file_connectivity =
-		read_connectivity("./graph.txt");
+    std::vector<std::map<vertex_type, distance_type>> file_connectivity =
+            read_connectivity("./graph.txt");
 
-	measure_execution_time(file_connectivity, do_work_serial);
+    measure_execution_time(file_connectivity, do_work_serial);
+    measure_execution_time(file_connectivity, do_work_parallel_lock);
+    measure_execution_time(file_connectivity, do_work_parallel_atomic);
+    measure_execution_time(file_connectivity, do_work_parallel_atomic_ref);
 
-	std::cout << std::flush;
+    std::cout << std::flush;
 
-	return 0;
+    return 0;
 }

@@ -1,14 +1,10 @@
-#include <iostream>
 #include <string>
 #include <thread>
-#include <mutex>
 
 int sharedValue = 0;
-void IncrementSharedValue10000000Times ( )
-{
+void IncrementSharedValue10000000Times() {
     int count = 0;
-    while ( count < 10000000)
-    {
+    while (count < 10000000) {
         sharedValue++;
         count++;
     }
@@ -25,12 +21,11 @@ void IncrementSharedValue10000000Times ( )
  *      consistency
 */
 
-int main (int argc , char * argv [] )
-{
+int main(int argc, char *argv[]) {
     sharedValue = 0;
-    std::thread thread2 ( IncrementSharedValue10000000Times ) ;
-    IncrementSharedValue10000000Times ( ) ;
-    thread2.join() ;
-    printf("sharedValue=%d \n", sharedValue) ;
+    std::thread thread2(IncrementSharedValue10000000Times);
+    IncrementSharedValue10000000Times();
+    thread2.join();
+    printf("sharedValue=%d \n", sharedValue);
     return 0;
 }

@@ -1,0 +1,1 @@
+/usr/bin/c++  -pthread   CMakeFiles/02_exercise_v_promises.dir/02_exercise/v_promises.cpp.o  -o 02_exercise_v_promises 

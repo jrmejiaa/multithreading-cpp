@@ -1,0 +1,1 @@
+/usr/bin/c++  -pthread   CMakeFiles/01_exercise.dir/01_exercise/main.cpp.o  -o 01_exercise 

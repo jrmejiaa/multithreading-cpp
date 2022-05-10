@@ -1,0 +1,1 @@
+/usr/bin/c++  -pthread   CMakeFiles/02_exercise_atomic.dir/02_exercise/atomic.cpp.o  -o 02_exercise_atomic 

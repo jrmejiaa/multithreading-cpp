@@ -92,10 +92,10 @@ private:
     // Mutable is used when we want to change the value inside a const object
     mutable std::mutex m{};
 public:
-    threadsafe_stack() {}
+    threadsafe_stack() = default;
 
     // The thread-safe stack is move-constructable, but not assignable or copy-constructable.
-    threadsafe_stack(threadsafe_stack &&other) {
+    threadsafe_stack(threadsafe_stack &&other)  noexcept {
         std::lock_guard<std::mutex> lock(other.m);
         data = std::move(other.data);
     }
@@ -109,7 +109,7 @@ public:
     // There is a method to push one element by copy semantics. This method only exists if the type is
     // copy-able and copy-constructable without exceptions.
     template<typename D = T, std::enable_if_t<std::is_same_v<D, T> && std::is_nothrow_copy_constructible_v<D> &&
-                                              std::is_nothrow_copy_assignable_v<D>, int> = 0>
+                                              std::is_nothrow_copy_assignable_v<D>, bool> = true>
     void push(const T &value) {
         std::lock_guard<std::mutex> lock(m);
 
@@ -120,7 +120,7 @@ public:
     // There is a method to push one element by move semantics. This method only exists if the type is
     // move-able and move-constructable without exceptions.
     template<typename D = T, std::enable_if_t<std::is_same_v<D, T> && std::is_nothrow_move_constructible_v<D> &&
-                                              std::is_nothrow_move_assignable_v<D>, int> = 0>
+                                              std::is_nothrow_move_assignable_v<D>, bool> = true>
     void push(T &&value) {
         std::lock_guard<std::mutex> lock(m);
 
@@ -164,7 +164,7 @@ public:
     // There is a method that takes as argument a reference to an object and populates it with the top
     // element. This method only exists if the type is copy-assignable.
     template<typename D = T, std::enable_if_t<std::is_same_v<D, T> && std::is_nothrow_copy_constructible_v<D> &&
-                                              std::is_nothrow_copy_assignable_v<D>, int> = 0>
+                                              std::is_nothrow_copy_assignable_v<D>, bool> = true>
     void pop(T &elem) {
         std::lock_guard<std::mutex> lock(m);
 

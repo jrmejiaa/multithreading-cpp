@@ -25,7 +25,7 @@ int main() {
 
     no_copy nc{};
 
-    threadsafe_stack<no_copy> tss_no_copy{};
+/*    threadsafe_stack<no_copy> tss_no_copy{};
     tss_no_copy.push(nc);
     tss_no_copy.push(std::move(nc));
 
